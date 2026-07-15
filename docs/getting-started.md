@@ -47,7 +47,7 @@ Two things a skill supplies that generic training does not:
 - **Version tags** on every behavior, such as `IGNORED` being `(10.6+)` or native vectors being `(11.7+)`. The agent uses these to match advice to the MariaDB version you run.
 - **Wrong/right pairs** for the mistakes models commonly make about MariaDB, so the agent corrects itself before answering.
 
-You do not need to open the files to use them. If you want the detail behind an answer, read the relevant `SKILL.md` directly. To confirm what you have installed, run `npx skills check`.
+You do not need to open the files to use them. But they are just files. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
 
 ## 3. Steer the right skill
 
