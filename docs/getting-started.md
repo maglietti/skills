@@ -106,7 +106,7 @@ FROM seq;
 SQL
 ```
 
-The `SET SESSION max_recursive_iterations = 100000` matters. MariaDB 11.8 defaults that limit to 1,000, so without it the generator stops at 1,000 rows. Section 5 comes back to this.
+The first line raises `max_recursive_iterations`, the MariaDB server variable that caps how many times a `WITH RECURSIVE` query may loop. Its default on 11.8 is 1,000, so without raising it the generator stops at 1,000 rows instead of 50,000. Section 5 comes back to version-specific defaults like this.
 
 Create a read-only user for the agent. This is the reliable guarantee that the agent cannot write, regardless of any application-level setting:
 
