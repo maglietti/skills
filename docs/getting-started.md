@@ -2,7 +2,7 @@
 
 *Last updated: 2026-07-15*
 
-You have installed the skills (if not, see the [README](../README.md)) and your agent says they "activate automatically." This guide picks up there. It shows you how to tell the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
+You have installed the skills (if not, see the [README](../README.md)) and your agent says they "activate automatically." This guide picks up there. It shows you how to confirm the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
 
 ## 1. See a skill change an answer
 
@@ -34,7 +34,7 @@ ALTER TABLE orders ALTER INDEX idx_customer IGNORED;
 ALTER TABLE orders ALTER INDEX idx_customer NOT IGNORED;
 ```
 
-This works. The skill also tells you why: `IGNORED` is a MariaDB feature (10.6+), and MySQL's `INVISIBLE` is the incompatible equivalent.
+This works, and the skill tells you why. `IGNORED` is MariaDB's own feature (10.6+), the incompatible counterpart to MySQL's `INVISIBLE`.
 
 That is the whole point of the skills. Your agent already knows MariaDB's headline features. What it misses are the subtle places where MariaDB and MySQL diverge, the version-specific details, and the features newer than the model's training. The skills close that gap.
 
@@ -47,7 +47,7 @@ Two things a skill supplies that generic training does not:
 - **Version tags** on every behavior, such as `IGNORED` being `(10.6+)` or native vectors being `(11.7+)`. The agent uses these to match advice to the MariaDB version you run.
 - **Wrong/right pairs** for the mistakes models commonly make about MariaDB, so the agent corrects itself before answering.
 
-You do not need to open the files to use them. But, they are plain markdown files that you can read if you are curious. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
+You do not need to open the files to use them. But they are plain markdown files that you can read if you are curious. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
 
 ## 3. Steer the right skill
 
@@ -64,7 +64,7 @@ The agent picks a skill from how you phrase the request. Name the task and the m
 | Building RAG, semantic search, or using `VECTOR` columns         | `mariadb-vector`                  |
 | Connecting an agent to a live MariaDB over MCP                   | `mariadb-mcp`                     |
 
-If you are not sure which applies, describe the problem in plain terms. "My orders query got slow after the table grew" reaches `mariadb-query-optimization` without you naming it.
+If you are not sure which applies, describe the problem in plain terms. "My orders query got slow after the table grew" reaches the `mariadb-query-optimization` skill without you naming it.
 
 ## 4. Put the agent to work on your database
 
@@ -108,7 +108,7 @@ SQL
 
 The first line raises `max_recursive_iterations`, the MariaDB server variable that caps how many times a `WITH RECURSIVE` query may loop. Its default on 11.8 is 1,000, so without raising it the generator stops at 1,000 rows instead of 50,000. Section 5 comes back to version-specific defaults like this.
 
-Create a read-only user for the agent. This is the reliable guarantee that the agent cannot write, regardless of any application-level setting:
+Create a read-only user for the agent. A database-level `GRANT` is what reliably prevents writes, regardless of the MCP server's own read-only setting:
 
 ```sql
 CREATE USER 'mcp_agent'@'%' IDENTIFIED BY 'mcp-readonly';
@@ -184,17 +184,17 @@ After the index, it is an index lookup that touches only the matching rows:
 type: ref    key: idx_orders_customer_email   rows: 10       Extra: Using index condition
 ```
 
-The agent diagnosed the problem against your real data, and you kept control of every write.
+The agent diagnosed the problem against your real data. Because the connection was read-only, every change stayed yours to make.
 
 ## 5. Trust but verify
 
-The skills make the agent more reliable on MariaDB. They do not make it infallible, and they are briefings, not a substitute for testing against your version. Two habits keep you safe:
+The skills make the agent more reliable on MariaDB. They do not make it infallible, and they are briefings, not a substitute for testing against your version. These habits keep you safe:
 
 - **Check the version tag.** When the agent states a behavior, it carries a tag like `(11.7+)` or `(10.6+)`. If the tag is above the MariaDB version you run, the advice does not apply to you yet.
-- **Notice the wrong/right framing.** When an answer explicitly contrasts a MariaDB feature with its MySQL equivalent, the way the index answer set `IGNORED` against `INVISIBLE`, that framing is a cue the skill fired rather than the model answering from generic training.
+- **Notice the wrong/right framing.** When an answer explicitly contrasts a MariaDB feature with its MySQL equivalent (as the index answer did, setting `IGNORED` against `INVISIBLE`), that framing is a cue the skill fired rather than the model answering from generic training.
 - **Confirm against the docs.** For anything load-bearing, follow the agent to [mariadb.com/docs](https://mariadb.com/docs) and read the page. The skills link there for exactly this reason.
 
-Defaults are a common trap, because they change between versions and the agent may not know yours. For example, `max_recursive_iterations` defaults to 1000 on MariaDB 11.8, so a recursive CTE that generates more than 1,000 rows aborts unless you raise it. The reliable check is to query the running server:
+Defaults are a common trap, because they change between versions and the agent may not know yours. For example, `max_recursive_iterations` defaults to 1,000 on MariaDB 11.8, so a recursive CTE that generates more than 1,000 rows aborts unless you raise it. The reliable check is to query the running server:
 
 ```sql
 SELECT @@max_recursive_iterations;
@@ -204,7 +204,7 @@ When the answer matters, ask the server, not the model.
 
 ## 6. Keep the skills current and contribute
 
-The skills track MariaDB as it releases, so they go stale if you never refresh them. If you installed with `npx skills`, check and update periodically:
+The skills track new MariaDB releases, so they go stale if you never refresh them. If you installed with `npx skills`, check and update periodically:
 
 ```bash
 npx skills check
