@@ -47,28 +47,28 @@ Two things a skill supplies that generic training does not:
 - **Version tags** on every behavior, such as `IGNORED` being `(10.6+)` or native vectors being `(11.7+)`. The agent uses these to match advice to the MariaDB version you run.
 - **Wrong/right pairs** for the mistakes models commonly make about MariaDB, so the agent corrects itself before answering.
 
-You do not need to open the files to use them. But they are just files. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
+You do not need to open the files to use them. But, they are plain markdown files that you can read if you are curious. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
 
 ## 3. Steer the right skill
 
 The agent picks a skill from how you phrase the request. Name the task and the matching skill activates.
 
-| When you are... | Skill that activates |
-| --- | --- |
-| Migrating a MySQL app, or hitting MySQL-habit surprises | `mysql-to-mariadb` |
-| Migrating an Oracle schema or PL/SQL | `oracle-to-mariadb` |
-| Asking what MariaDB does beyond MySQL, or reviewing a schema | `mariadb-features` |
-| Diagnosing a slow query, designing an index, reading `EXPLAIN` | `mariadb-query-optimization` |
-| Setting up replication, Galera, GTID, or HA application patterns | `mariadb-replication-and-ha` |
-| Tracking row history, audit trails, or point-in-time queries | `mariadb-system-versioned-tables` |
-| Building RAG, semantic search, or using `VECTOR` columns | `mariadb-vector` |
-| Connecting an agent to a live MariaDB over MCP | `mariadb-mcp` |
+| When you are...                                                  | Skill that activates              |
+| ---------------------------------------------------------------- | --------------------------------- |
+| Migrating a MySQL app, or hitting MySQL-habit surprises          | `mysql-to-mariadb`                |
+| Migrating an Oracle schema or PL/SQL                             | `oracle-to-mariadb`               |
+| Asking what MariaDB does beyond MySQL, or reviewing a schema     | `mariadb-features`                |
+| Diagnosing a slow query, designing an index, reading `EXPLAIN`   | `mariadb-query-optimization`      |
+| Setting up replication, Galera, GTID, or HA application patterns | `mariadb-replication-and-ha`      |
+| Tracking row history, audit trails, or point-in-time queries     | `mariadb-system-versioned-tables` |
+| Building RAG, semantic search, or using `VECTOR` columns         | `mariadb-vector`                  |
+| Connecting an agent to a live MariaDB over MCP                   | `mariadb-mcp`                     |
 
 If you are not sure which applies, describe the problem in plain terms. "My orders query got slow after the table grew" reaches `mariadb-query-optimization` without you naming it.
 
 ## 4. Put the agent to work on your database
 
-The sharpest daily use is letting the agent read your actual database and diagnose a real problem. The `mariadb-mcp` skill connects your agent to a live MariaDB over the Model Context Protocol, with a read-only connection.
+Day to day, the most useful thing you can do is let the agent read your database and diagnose a real problem. The `mariadb-mcp` skill connects your agent to a live MariaDB over the Model Context Protocol, with a read-only connection.
 
 ### Start a throwaway MariaDB
 
