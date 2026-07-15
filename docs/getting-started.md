@@ -24,7 +24,7 @@ check the manual that corresponds to your MariaDB server version
 for the right syntax to use near 'INVISIBLE' at line 1
 ```
 
-MariaDB never implemented MySQL's `INVISIBLE` indexes. It has the same capability under a different keyword. Now install `mariadb-query-optimization` and ask again. The answer changes:
+MariaDB never implemented MySQL's `INVISIBLE` indexes. It has the same capability under a different keyword. Now install the `mariadb-query-optimization` skill and ask again. The answer changes:
 
 ```sql
 -- Hide the index from the optimizer; it stays maintained on writes.
