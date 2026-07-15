@@ -68,7 +68,7 @@ If you are not sure which applies, describe the problem in plain terms. "My orde
 
 ## 4. Put the agent to work on your database
 
-Day to day, the most useful thing you can do is let the agent read your database and diagnose a real problem. The `mariadb-mcp` skill connects your agent to a live MariaDB over the Model Context Protocol, with a read-only connection.
+Day to day, the most useful thing you can do is let the agent read your database and diagnose a real problem. The `mariadb-mcp` skill connects your agent to a live MariaDB over the Model Context Protocol (MCP), with a read-only connection.
 
 ### Start a throwaway MariaDB
 
@@ -117,13 +117,33 @@ GRANT SELECT, SHOW DATABASES ON *.* TO 'mcp_agent'@'%';
 
 ### Connect the agent over MCP
 
-Follow the `mariadb-mcp` skill to run the MariaDB MCP Server against that database and register it with your tool. In Claude Code the registration is one command:
+The MariaDB MCP Server is a small open-source program ([github.com/MariaDB/mcp](https://github.com/MariaDB/mcp), MIT-licensed) that sits between your agent and the database. It is separate from both the database and the skills: you run it locally, point it at your database, and register it with your agent, which then queries through it.
+
+Get it and install its dependencies (a Python 3.11+ app managed with `uv`):
+
+```bash
+git clone https://github.com/MariaDB/mcp
+cd mcp && uv sync
+```
+
+Create a `.env` in that directory so the server connects as the read-only user:
+
+```ini
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=mcp_agent
+DB_PASSWORD=mcp-readonly
+DB_NAME=shop
+MCP_READ_ONLY=true
+```
+
+Register the server with your agent so it launches on demand. In Claude Code that is one command (use the absolute path to your clone):
 
 ```bash
 claude mcp add mariadb -- uv --directory /path/to/mcp run src/server.py
 ```
 
-Point the server's `.env` at your database with `DB_USER=mcp_agent` and `MCP_READ_ONLY=true`. Cursor, Windsurf, and VS Code register MCP servers through their own settings rather than a CLI; the `mariadb-mcp` skill covers each.
+Cursor, Windsurf, and VS Code register MCP servers through their own settings rather than a CLI. The `mariadb-mcp` skill covers those, plus SSL, remote hosts, and the optional vector tools.
 
 ### Ask the agent to diagnose a slow query
 
