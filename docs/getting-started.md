@@ -1,6 +1,6 @@
 # Getting Started: Using the MariaDB Skills in Daily Development
 
-*Last updated: 2026-07-15*
+*Last updated: 2026-07-17*
 
 You have installed the skills (if not, see the [README](../README.md)) and your agent says they "activate automatically." This guide picks up there. It shows you how to confirm the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
 
@@ -47,7 +47,12 @@ Two things a skill supplies that generic training does not:
 - **Version tags** on every behavior, such as `IGNORED` being `(10.6+)` or native vectors being `(11.7+)`. The agent uses these to match advice to the MariaDB version you run.
 - **Wrong/right pairs** for the mistakes models commonly make about MariaDB, so the agent corrects itself before answering.
 
-You do not need to open the files to use them. But they are plain markdown files that you can read if you are curious. Each installed skill is a directory in your agent's skills folder (for example `~/.agents/skills/`), so you can see what you have at a glance and open any `SKILL.md` when you want the detail behind an answer.
+You do not need to open the files to use them. But they are plain markdown files that you can read if you are curious. Each installed skill is a directory in your agent's skills folder, so you can list what you have and open any `SKILL.md` for the detail behind an answer. Where the folder lives depends on the agent: Claude Code and Claude Desktop use `~/.claude/skills/`, and OpenAI Codex uses `~/.agents/skills/`.
+
+```bash
+ls ~/.claude/skills/        # Claude Code / Claude Desktop
+# mariadb-features  mariadb-mcp  mariadb-query-optimization  ...
+```
 
 ## 3. Steer the right skill
 
@@ -143,7 +148,32 @@ Register the server with your agent so it launches on demand. In Claude Code tha
 claude mcp add mariadb -- uv --directory /path/to/mcp run src/server.py
 ```
 
-Cursor, Windsurf, and VS Code register MCP servers through their own settings rather than a CLI. The `mariadb-mcp` skill covers those, plus SSL, remote hosts, and the optional vector tools.
+Cursor, Windsurf, and VS Code register MCP servers through a JSON config file rather than a CLI. The command and args are the same; only the file differs:
+
+| Tool | File it reads |
+| ---- | ------------- |
+| Cursor | `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
+| VS Code (Copilot) | `.vscode/mcp.json` in the workspace, or the user `settings.json` |
+
+The `mariadb-mcp` skill has the exact per-tool JSON, plus SSL, remote hosts, and the optional vector tools.
+
+### Review the schema first
+
+Before chasing a specific problem, let the agent read what you have and tell you what MariaDB offers that a MySQL-shaped schema leaves on the table:
+
+> Connect to my `shop` database, look at the `orders` schema, and tell me what MariaDB offers beyond MySQL that would improve this table's durability or auditing.
+
+This phrasing lands on `mariadb-features` (the "reviewing a schema" row in Section 3). The agent reads the schema over MCP and points out capabilities the plain table does not use, each with its version tag. For an `orders` table the standout is **system-versioned tables** (`10.3+`), which keep the full history of every row automatically:
+
+```sql
+-- Every status change (new → paid → shipped) becomes queryable after the fact,
+-- with no trigger and no separate audit table.
+ALTER TABLE orders ADD SYSTEM VERSIONING;
+SELECT * FROM orders FOR SYSTEM_TIME AS OF '2026-01-01' WHERE id = 1234;
+```
+
+It also flags smaller wins like `RETURNING` on `INSERT` (`10.5+`), which hands back the new row in one statement instead of a follow-up `SELECT LAST_INSERT_ID()`. This is the "connect, review what you have, then act" pattern, and it composes a third skill alongside `mariadb-mcp` and the query work below.
 
 ### Ask the agent to diagnose a slow query
 
@@ -175,7 +205,7 @@ CREATE INDEX idx_orders_customer_email ON orders(customer_email);
 Now check the plan with `EXPLAIN`, which you can run directly. Before the index, the query is a full scan:
 
 ```text
-type: ALL    key: NULL                        rows: 49864    Extra: Using where
+type: ALL    key: NULL                        rows: 49980    Extra: Using where
 ```
 
 After the index, it is an index lookup that touches only the matching rows:
@@ -194,6 +224,21 @@ The skills make the agent more reliable on MariaDB. They do not make it infallib
 - **Notice the wrong/right framing.** When an answer explicitly contrasts a MariaDB feature with its MySQL equivalent (as the index answer did, setting `IGNORED` against `INVISIBLE`), that framing is a cue the skill fired rather than the model answering from generic training.
 - **Confirm against the docs.** For anything load-bearing, follow the agent to [mariadb.com/docs](https://mariadb.com/docs) and read the page. The skills link there for exactly this reason.
 
+Here is that last habit as a procedure, using the answer from Section 1. The agent claimed `IGNORED` is a MariaDB feature since `10.6`, the counterpart to MySQL's `INVISIBLE`. To verify it rather than trust it:
+
+1. Open the page the skill cites: [Ignored Indexes](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/optimization-and-indexes/ignored-indexes).
+2. Confirm the claim's two load-bearing parts on the page: it states "This feature is available from MariaDB 10.6" (the version tag), and it documents `ALTER TABLE ... ALTER {INDEX | KEY} ... [NOT] IGNORED` (the syntax).
+3. Confirm it on your own server, which settles it regardless of the docs:
+
+   ```sql
+   ALTER TABLE orders ALTER INDEX idx_orders_customer_email IGNORED;      -- succeeds
+   SELECT index_name, ignored FROM information_schema.statistics
+     WHERE table_name = 'orders' AND index_name = 'idx_orders_customer_email';   -- ignored = YES
+   ALTER TABLE orders ALTER INDEX idx_orders_customer_email NOT IGNORED;  -- ignored = NO
+   ```
+
+   If the same statement with MySQL's `INVISIBLE` keyword is what you were told, it fails here with `ERROR 1064` — which is the whole point of the Section 1 opener. Version tag, syntax, live server: three checks, a couple of minutes, and the claim is settled.
+
 Defaults are a common trap, because they change between versions and the agent may not know yours. For example, `max_recursive_iterations` defaults to 1,000 on MariaDB 11.8, so a recursive CTE that generates more than 1,000 rows aborts unless you raise it. The reliable check is to query the running server:
 
 ```sql
@@ -211,8 +256,14 @@ npx skills check
 npx skills update
 ```
 
-When the agent still gets something wrong about MariaDB, that is a gap in a skill, not just a bad answer. Open a pull request against the affected `SKILL.md` at [github.com/mariadb/skills](https://github.com/mariadb/skills) so the correction reaches everyone.
+When the agent still gets something wrong about MariaDB, that is a gap in a skill, not just a bad answer. Each skill is a single `SKILL.md` file, and you already have the installed copy on disk (for Claude Code, `~/.claude/skills/<skill-name>/SKILL.md`) to see exactly what the agent was told. The fix travels the normal GitHub path:
+
+1. Fork [github.com/mariadb/skills](https://github.com/mariadb/skills) and branch from `main`.
+2. Edit the affected `SKILL.md` — correct the claim, and keep the version tag (`(11.8+)`) and wrong/right framing the other entries use.
+3. Open a pull request describing what the agent got wrong and the MariaDB version you saw it on.
+
+That way the correction reaches everyone who installs the skill, not just your session.
 
 ## Where to go next
 
-For task-specific recipes, one per skill grouped by situation (migrating in, making it faster, running it in production, building AI features), see the daily-workflows playbook. *(Coming soon.)*
+For task-specific recipes, one per skill grouped by situation (migrating in, making it faster, running it in production, building AI features), see the [daily-workflows playbook](./daily-workflows.md).
