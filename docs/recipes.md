@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-18_
 
-The [getting-started guide](getting-started.md) taught the model: what a skill is, how to steer which one activates, one end-to-end workflow over a live database, and how to verify the result. These recipes are the part you come back to. Each one is a task you can hand to your agent, grouped by the situation you are in.
+Each recipe here is a task you can hand to your agent, grouped by the situation you are in. If you have not installed the skills or set up a database to run them against, start with the [getting-started guide](getting-started.md).
 
 Every recipe has the same four labeled parts, so you scan any one of them the same way:
 
