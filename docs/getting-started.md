@@ -267,3 +267,5 @@ That way the correction reaches everyone who installs the skill, not just your s
 ## Where to go next
 
 For task-specific recipes, one per skill grouped by situation (migrating to MariaDB, making it faster, running it in production, building AI features), see the [MariaDB skill recipes](./recipes.md).
+
+Want a community-standard dataset to practice on? The `mariadb-sample-sakila`, `mariadb-sample-world`, and `mariadb-sample-employees` skills load Sakila, world, and the large employees dataset onto MariaDB with the correct `mariadb` client commands, and warn about the MySQL-era load steps that fail.
