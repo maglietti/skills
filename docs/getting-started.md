@@ -1,6 +1,6 @@
 # Getting Started: Using the MariaDB Skills in Daily Development
 
-*Last updated: 2026-07-17*
+*Last updated: 2026-07-18*
 
 You have installed the skills (if not, see the [README](../README.md)) and your agent says they "activate automatically." This guide picks up there. It shows you how to confirm the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
 
@@ -266,4 +266,4 @@ That way the correction reaches everyone who installs the skill, not just your s
 
 ## Where to go next
 
-For task-specific recipes, one per skill grouped by situation (migrating to MariaDB, making it faster, running it in production, building AI features), see the [daily-workflows playbook](./daily-workflows.md).
+For task-specific recipes, one per skill grouped by situation (migrating to MariaDB, making it faster, running it in production, building AI features), see the [MariaDB skill recipes](./recipes.md).

@@ -1,8 +1,8 @@
-# Daily Workflows: A Recipe for Each MariaDB Skill
+# MariaDB Skill Recipes
 
-_Last updated: 2026-07-17_
+_Last updated: 2026-07-18_
 
-The [getting-started guide](getting-started.md) taught the model: what a skill is, how to steer which one activates, one end-to-end workflow over a live database, and how to verify the result. This playbook is the part you come back to. Each recipe is a task you can hand to your agent, grouped by the situation you are in.
+The [getting-started guide](getting-started.md) taught the model: what a skill is, how to steer which one activates, one end-to-end workflow over a live database, and how to verify the result. These recipes are the part you come back to. Each one is a task you can hand to your agent, grouped by the situation you are in.
 
 Every recipe has the same four labeled parts, so you scan any one of them the same way:
 
@@ -252,7 +252,7 @@ See [Vector Overview](https://mariadb.com/docs/server/reference/sql-structure/ve
 
 ## A note on the MCP connection
 
-The recipes above that run through your agent ride on the MariaDB MCP connection set up in the getting-started guide, so this playbook does not repeat that setup. Two operational limits from that guide's Section 4 still apply and are worth keeping in mind for production use: the server's read-only mode blocks `EXPLAIN` and `ANALYZE` as if they were writes, and an idle read-only connection runs with autocommit off, so it holds a metadata lock that can block your DDL. Run `EXPLAIN` and apply schema changes from a direct session, not through the read-only agent.
+The recipes above that run through your agent ride on the MariaDB MCP connection set up in the getting-started guide, so these recipes do not repeat that setup. Two operational limits from that guide's Section 4 still apply and are worth keeping in mind for production use: the server's read-only mode blocks `EXPLAIN` and `ANALYZE` as if they were writes, and an idle read-only connection runs with autocommit off, so it holds a metadata lock that can block your DDL. Run `EXPLAIN` and apply schema changes from a direct session, not through the read-only agent.
 
 The database-level guarantee that keeps an agent safe is a read-only grant, not the server's own setting. A write attempted as such a user is refused outright:
 
@@ -263,4 +263,4 @@ ERROR 1142 (42000): INSERT command denied to user 'mcp_agent'@'localhost' for ta
 
 ## HA and replication: coming later
 
-Replication and high availability (GTID replication, Galera Cluster, and the application patterns that go with them) need more than one server to show honestly, so they are not in this single-node playbook. A separate piece will cover the `mariadb-replication-and-ha` skill.
+Replication and high availability (GTID replication, Galera Cluster, and the application patterns that go with them) need more than one server to show honestly, so they are not among these single-node recipes. A separate piece will cover the `mariadb-replication-and-ha` skill.
