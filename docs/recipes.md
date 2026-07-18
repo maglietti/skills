@@ -13,7 +13,69 @@ Every recipe has the same four labeled parts, so you scan any one of them the sa
 
 The contrast between **Without the skill** and **With the skill** is the point of each recipe: it is exactly what the skill changes about the agent's answer.
 
-The recipes reuse the sample `shop` database from the getting-started guide. Stand it up with that guide's `setup-environment.sh`, then load the small per-recipe tables from `working/content/daily-workflows/recipes.sql`. Recipes you run through the agent go over the MariaDB MCP connection the guide set up; do not re-run the MCP setup for each recipe. Every version tag like `(10.5+)` marks the minimum MariaDB version for that behavior; the baseline here is 11.8 LTS.
+Every version tag like `(10.5+)` marks the minimum MariaDB version for that behavior; the baseline here is 11.8 LTS.
+
+## Setup
+
+The recipes reuse the sample `shop` database from the [getting-started guide](getting-started.md). Follow its Section 4 to start the container and load the 50,000-row `orders` table, then add the small companion tables the recipes below use. Save this as `companion.sql`:
+
+```sql
+USE shop;
+
+-- mysql-to-mariadb: a JSON column for the ->/->> divergence and RETURNING.
+DROP TABLE IF EXISTS events;
+CREATE TABLE events (
+  id      INT AUTO_INCREMENT PRIMARY KEY,
+  payload JSON NOT NULL
+);
+INSERT INTO events (payload) VALUES ('{"user": "alice", "action": "login"}');
+
+-- oracle-to-mariadb: a self-referencing hierarchy for the CONNECT BY rewrite.
+DROP TABLE IF EXISTS categories;
+CREATE TABLE categories (
+  id        INT PRIMARY KEY,
+  parent_id INT,
+  name      VARCHAR(50)
+);
+INSERT INTO categories VALUES
+  (1, NULL, 'All'),
+  (2, 1,    'Electronics'),
+  (3, 1,    'Books'),
+  (4, 2,    'Phones'),
+  (5, 2,    'Laptops'),
+  (6, 4,    'Android');
+
+-- mariadb-system-versioned-tables: history comes from the recipe's own UPDATE.
+DROP TABLE IF EXISTS employees;
+CREATE TABLE employees (
+  id     INT PRIMARY KEY,
+  name   VARCHAR(50),
+  salary DECIMAL(10,2)
+) WITH SYSTEM VERSIONING;
+INSERT INTO employees VALUES (1, 'Ada', 90000);
+
+-- mariadb-vector: toy 4-dimensional vectors, no embedding model needed.
+DROP TABLE IF EXISTS documents;
+CREATE TABLE documents (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  content   VARCHAR(50) NOT NULL,
+  embedding VECTOR(4)   NOT NULL,
+  VECTOR INDEX (embedding) DISTANCE=euclidean
+);
+INSERT INTO documents (content, embedding) VALUES
+  ('red apple',   VEC_FromText('[0.9, 0.1, 0.0, 0.0]')),
+  ('green apple', VEC_FromText('[0.8, 0.2, 0.0, 0.1]')),
+  ('school bus',  VEC_FromText('[0.0, 0.1, 0.9, 0.2]')),
+  ('taxi cab',    VEC_FromText('[0.1, 0.0, 0.8, 0.3]'));
+```
+
+Load it into the getting-started container:
+
+```bash
+docker exec -i mariadb-demo mariadb -uroot -pdemo shop < companion.sql
+```
+
+Recipes you run through your agent go over the MariaDB MCP connection from the getting-started guide, so there is no MCP setup to repeat here.
 
 ## Migrating to MariaDB
 
