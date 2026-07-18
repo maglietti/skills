@@ -75,7 +75,7 @@ If you are not sure which applies, describe the problem in plain terms. "My orde
 
 Day to day, the most useful thing you can do is let the agent read your database and diagnose a real problem. The `mariadb-mcp` skill connects your agent to a live MariaDB over the Model Context Protocol (MCP), with a read-only connection.
 
-### Start a throwaway MariaDB
+### Start a practice database
 
 Skip this if you already have a database to point at. Otherwise, a Community Server 11.8 container gives you something safe to experiment on:
 
