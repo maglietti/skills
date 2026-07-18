@@ -77,6 +77,56 @@ docker exec -i mariadb-demo mariadb -uroot -pdemo shop < companion.sql
 
 Recipes you run through your agent go over the MariaDB MCP connection from the getting-started guide, so there is no MCP setup to repeat here.
 
+## Load a sample database to practice on
+
+The `shop` database above is hand-built for these recipes. When you want a larger, community-standard schema to explore, the three `mariadb-sample-*` skills load the datasets people benchmark and teach against. The catch they remove is that each of these is a MySQL sample: its own instructions name the deprecated `mysql` client, and the JSON variant of one of them will not load on MariaDB at all.
+
+### `mariadb-sample-*`: load Sakila, world, or employees
+
+**Prompt** (steers the skill):
+
+> Download the Sakila sample database and load it into my MariaDB container. I want a realistic schema to practice joins on.
+
+**Without the skill:** the agent follows Sakila's own README, which names the `mysql` client, and when you later ask for a JSON dataset it points you at the `world_x` variant, whose load aborts on MariaDB 11.8:
+
+```text
+ERROR 1903 (HY000): Primary key cannot be defined upon a generated column
+```
+
+MariaDB, unlike MySQL, forbids a primary key on a generated column, so `world_x` never finishes loading.
+
+**With the skill:** the agent uses the `mariadb` client, loads the schema before the data, and knows which datasets carry a trap. Sakila loads as two files:
+
+```bash
+# Download sakila-db.tar.gz from the MySQL Example Databases page, then:
+docker exec -i mariadb-demo mariadb -uroot -pdemo < sakila-db/sakila-schema.sql
+docker exec -i mariadb-demo mariadb -uroot -pdemo < sakila-db/sakila-data.sql
+```
+
+The other two datasets load the same way, each with one MariaDB-specific point the skill flags:
+
+| Dataset (skill) | Source and load | Verified size | MariaDB trap the skill removes |
+|---|---|---|---|
+| Sakila (`mariadb-sample-sakila`) | `sakila-schema.sql`, then `sakila-data.sql` | 16 base tables, 16,044 rentals | The schema file sets `DELIMITER` for its routines; load the whole file, and load schema before data |
+| world (`mariadb-sample-world`) | single `world.sql` | 3 tables: 239 countries, 4,079 cities, 984 languages | The JSON `world_x` variant fails to load (primary key on a generated column) |
+| employees (`mariadb-sample-employees`) | `git clone`, then `mariadb -t < employees.sql` | 6 tables, 2,844,047 salary rows | `employees.sql` loads data with `source`, so run it from the clone directory or the `.dump` files are not found |
+
+**Verify:** confirm the Sakila load with a row count that matches the schema:
+
+```sql
+SELECT COUNT(*) AS rentals FROM sakila.rental;
+```
+
+```text
++---------+
+| rentals |
++---------+
+|   16044 |
++---------+
+```
+
+For each dataset's schema, full load steps, and example queries, see the `mariadb-sample-sakila`, `mariadb-sample-world`, and `mariadb-sample-employees` skills.
+
 ## Migrating to MariaDB
 
 ### `mysql-to-mariadb`: JSON operators and RETURNING
