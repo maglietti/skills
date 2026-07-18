@@ -237,7 +237,7 @@ Here is that last habit as a procedure, using the answer from Section 1. The age
    ALTER TABLE orders ALTER INDEX idx_orders_customer_email NOT IGNORED;  -- ignored = NO
    ```
 
-   If the same statement with MySQL's `INVISIBLE` keyword is what you were told, it fails here with `ERROR 1064` — which is the whole point of the Section 1 opener. Version tag, syntax, live server: three checks, a couple of minutes, and the claim is settled.
+   If the same statement with MySQL's `INVISIBLE` keyword is what you were told, it fails here with `ERROR 1064`, which is the whole point of the Section 1 opener. Version tag, syntax, live server: three checks, a couple of minutes, and the claim is settled.
 
 Defaults are a common trap, because they change between versions and the agent may not know yours. For example, `max_recursive_iterations` defaults to 1,000 on MariaDB 11.8, so a recursive CTE that generates more than 1,000 rows aborts unless you raise it. The reliable check is to query the running server:
 
@@ -259,7 +259,7 @@ npx skills update
 When the agent still gets something wrong about MariaDB, that is a gap in a skill, not just a bad answer. Each skill is a single `SKILL.md` file, and you already have the installed copy on disk (for Claude Code, `~/.claude/skills/<skill-name>/SKILL.md`) to see exactly what the agent was told. The fix travels the normal GitHub path:
 
 1. Fork [github.com/mariadb/skills](https://github.com/mariadb/skills) and branch from `main`.
-2. Edit the affected `SKILL.md` — correct the claim, and keep the version tag (`(11.8+)`) and wrong/right framing the other entries use.
+2. Edit the affected `SKILL.md`. Correct the claim, and keep the version tag (`(11.8+)`) and wrong/right framing the other entries use.
 3. Open a pull request describing what the agent got wrong and the MariaDB version you saw it on.
 
 That way the correction reaches everyone who installs the skill, not just your session.

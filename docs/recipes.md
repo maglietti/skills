@@ -6,12 +6,12 @@ Each recipe here is a task you can hand to your agent, grouped by the situation 
 
 Every recipe has the same four labeled parts, so you scan any one of them the same way:
 
-- **Prompt** — the phrasing that steers the skill, shown as a blockquote you can adapt.
-- **Without the skill** — the default an agent reaches for when the skill is not loaded, and why it fails or falls short.
-- **With the skill** — the corrected answer, with real output captured from a run on MariaDB Community Server 11.8.8.
-- **Verify** — one move that confirms the result on your own server.
+- **Prompt**: the phrasing that steers the skill, shown as a blockquote you can adapt.
+- **Without the skill**: the default an agent reaches for when the skill is not loaded, and why it fails or falls short.
+- **With the skill**: the corrected answer, with real output captured from a run on MariaDB Community Server 11.8.8.
+- **Verify**: one move that confirms the result on your own server.
 
-The contrast between **Without the skill** and **With the skill** is the point of each recipe: it is exactly what the skill changes about the agent's answer.
+The contrast between **Without the skill** and **With the skill** is the point of each recipe. It is exactly what the skill changes about the agent's answer.
 
 Every version tag like `(10.5+)` marks the minimum MariaDB version for that behavior; the baseline here is 11.8 LTS.
 
@@ -79,7 +79,7 @@ Recipes you run through your agent go over the MariaDB MCP connection from the g
 
 ## Migrating to MariaDB
 
-### `mysql-to-mariadb` — JSON operators and RETURNING
+### `mysql-to-mariadb`: JSON operators and RETURNING
 
 **Prompt** (steers the skill):
 
@@ -114,7 +114,7 @@ INSERT INTO events (payload) VALUES ('{"user": "bob", "action": "purchase"}')
 
 **Verify:** run the original `->` statement against your server. A syntax error near `'>'` confirms the divergence is real and not a style preference. For the full list of MySQL features that need adapting, see [MariaDB vs MySQL Compatibility](https://mariadb.com/docs/release-notes/community-server/about/compatibility-and-differences/mariadb-vs-mysql-compatibility).
 
-### `oracle-to-mariadb` — data types and CONNECT BY
+### `oracle-to-mariadb`: data types and CONNECT BY
 
 **Prompt** (steers the skill):
 
@@ -171,7 +171,7 @@ SELECT CONCAT(REPEAT('  ', depth), name) AS category_tree FROM tree ORDER BY id;
 
 ## Making it faster
 
-### `mariadb-query-optimization` — deep pagination
+### `mariadb-query-optimization`: deep pagination
 
 **Prompt** (steers the skill):
 
@@ -195,7 +195,7 @@ EXPLAIN SELECT id, customer_email FROM orders WHERE id > 49990 ORDER BY id LIMIT
 
 **Verify:** run both forms through `ANALYZE FORMAT=JSON` and compare `r_rows` and `pages_accessed`. If the cursor version does not drop to `type=range`, the ordering column is not the leading part of an index. See [Pagination Optimization](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/query-optimizations/pagination-optimization).
 
-### `mariadb-features` — window functions and INSTANT ALTER
+### `mariadb-features`: window functions and INSTANT ALTER
 
 **Prompt** (steers the skill):
 
@@ -223,7 +223,7 @@ FROM orders GROUP BY status ORDER BY rnk;
 +-----------+-----------+-----+
 ```
 
-The schema change uses `ALGORITHM=INSTANT` (10.4+), a metadata-only `ALTER TABLE` that completes without rebuilding or copying the table, where the default `COPY` path rewrites every row. On 50,000 rows the instant add-column took 0.033 s against 0.067 s for a copy, and the gap widens with table size because instant is constant-time. Asking for `INSTANT` explicitly also guards you: MariaDB refuses rather than silently falling back to a slow rebuild.
+The schema change uses `ALGORITHM=INSTANT` (10.4+), a metadata-only `ALTER TABLE` that completes without rebuilding or copying the table, where the default `COPY` path rewrites every row. On 50,000 rows the instant add-column took 0.033 s against 0.067 s for a copy, and the gap widens with table size because instant is constant-time. Asking for `INSTANT` explicitly also guards you, because MariaDB refuses rather than silently falling back to a slow rebuild.
 
 ```text
 ALTER TABLE orders ADD INDEX idx_status (status), ALGORITHM=INSTANT;
@@ -234,13 +234,13 @@ ERROR 1846 (0A000): ALGORITHM=INSTANT is not supported. Reason: ADD INDEX. Try A
 
 ## Running it in production
 
-### `mariadb-system-versioned-tables` — automatic row history
+### `mariadb-system-versioned-tables`: automatic row history
 
 **Prompt** (steers the skill):
 
 > Give this table an audit trail. I need to see what any row looked like at a past date, without triggers or a separate history table.
 
-**Without the skill:** the agent builds the audit trail by hand — a second history table plus `AFTER UPDATE` and `AFTER DELETE` triggers to copy old rows into it. That is more schema to maintain and easy to get subtly wrong.
+**Without the skill:** the agent builds the audit trail by hand: a second history table plus `AFTER UPDATE` and `AFTER DELETE` triggers to copy old rows into it. That is more schema to maintain and easy to get subtly wrong.
 
 **With the skill:** system versioning (10.3+) makes MariaDB keep every past version of a row automatically. Add `WITH SYSTEM VERSIONING` to the table, and every `UPDATE` and `DELETE` appends a history row with hidden `ROW_START` and `ROW_END` timestamps. The `FOR SYSTEM_TIME` clause reads the past: `AS OF` a past instant, or `ALL` for every version ever. It goes right after the table name:
 
@@ -272,7 +272,7 @@ And history grows without bound, because MariaDB never expires it on its own. Fo
 
 ## Building AI features
 
-### `mariadb-vector` — native semantic search
+### `mariadb-vector`: native semantic search
 
 **Prompt** (steers the skill):
 
@@ -301,7 +301,7 @@ LIMIT 2;
 +----+-------------+--------+
 ```
 
-A stored `VECTOR` is packed binary, so a plain `SELECT embedding` returns unreadable bytes. Wrap it in `VEC_ToText` to read it back as `[0.9,0.1,0,0]`. Match the distance function to the index too: a `VEC_DISTANCE_EUCLIDEAN` query against a `DISTANCE=cosine` index silently full-scans.
+A stored `VECTOR` is packed binary, so a plain `SELECT embedding` returns unreadable bytes. Wrap it in `VEC_ToText` to read it back as `[0.9,0.1,0,0]`. Match the distance function to the index too. A `VEC_DISTANCE_EUCLIDEAN` query against a `DISTANCE=cosine` index silently full-scans.
 
 **Verify:** run `EXPLAIN` on the query with and without the `LIMIT`. With `LIMIT` the plan shows `type=index` on the `embedding` key; without it, `type=ALL` and `Using filesort`, which is the full scan.
 
