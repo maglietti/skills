@@ -266,4 +266,4 @@ That way the correction reaches everyone who installs the skill, not just your s
 
 ## Where to go next
 
-For task-specific recipes, one per skill grouped by situation (migrating in, making it faster, running it in production, building AI features), see the [daily-workflows playbook](./daily-workflows.md).
+For task-specific recipes, one per skill grouped by situation (migrating to MariaDB, making it faster, running it in production, building AI features), see the [daily-workflows playbook](./daily-workflows.md).
