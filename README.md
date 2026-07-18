@@ -10,7 +10,7 @@ Skills work with Claude Code, GitHub Copilot, Cursor, OpenAI Codex, and 20+ othe
 
 ## Skills for MariaDB
 
-We have created an initial set of eight skills at **[github.com/mariadb/skills](https://github.com/mariadb/skills)** — each for a different situation where agents need MariaDB-specific guidance. Install and usage instructions follow below.
+We have created an initial set of eight core skills plus three sample-database skills at **[github.com/mariadb/skills](https://github.com/mariadb/skills)** — each for a different situation where agents need MariaDB-specific guidance. Install and usage instructions follow below.
 
 Skills use wrong/right pairs, version annotations, and links to official documentation so agents can tailor advice to the MariaDB version you run.
 
@@ -45,6 +45,22 @@ For AI applications, RAG, and semantic search. Native vector support since Maria
 ### [mariadb-mcp](https://github.com/MariaDB/skills/blob/main/mariadb-mcp/SKILL.md)
 
 For connecting agents to a MariaDB database via the Model Context Protocol — schemas, read-only SQL, optional semantic search, and secure setup.
+
+### Sample-database skills
+
+For loading a community sample database onto MariaDB and querying it correctly. Each corrects the MariaDB-specific loading and usage mistakes an agent makes when it treats these as MySQL datasets, using the current `mariadb` client names.
+
+#### [mariadb-sample-sakila](https://github.com/MariaDB/skills/blob/main/mariadb-sample-sakila/SKILL.md)
+
+The Sakila DVD-rental store: 16 tables, 7 views, stored routines, and triggers. For practicing joins, views, and stored routines on a realistic relational schema.
+
+#### [mariadb-sample-world](https://github.com/MariaDB/skills/blob/main/mariadb-sample-world/SKILL.md)
+
+Countries, cities, and languages in three tables. The small, flat dataset for basic query and join practice. Explains why the JSON `world_x` variant fails to load on MariaDB.
+
+#### [mariadb-sample-employees](https://github.com/MariaDB/skills/blob/main/mariadb-sample-employees/SKILL.md)
+
+About 300,000 employees and 2.8 million salary rows. The large dataset for index, pagination, and partitioning practice, with the load-directory gotcha that trips up its `source`-based import.
 
 ## How to install
 
