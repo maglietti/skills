@@ -90,7 +90,7 @@ Run `check` first to see what's outdated; `update` pulls the latest from this re
 
 ## Using MariaDB skills
 
-Once installed, skills activate automatically. When your question matches a skill's topic, the agent reads it and applies the guidance for that session. No manual activation is needed.
+How a skill activates depends on your agent. Claude Code and Claude Desktop read a skill automatically when your question matches its `description`, then apply the guidance for that session with no manual activation. Other tools load the same `SKILL.md` content through their own mechanism (Cursor rules, GitHub Copilot instructions, OpenAI Codex `AGENTS.md`), so when a skill applies varies. Check your agent's documentation for how it selects and loads skills.
 
 ## Contributions and Improvements
 

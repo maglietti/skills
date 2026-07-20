@@ -1,8 +1,12 @@
 # Getting Started: Using the MariaDB Skills in Daily Development
 
-*Last updated: 2026-07-18*
+*Last updated: 2026-07-20*
 
-You have installed the skills (if not, see the [README](../README.md)) and your agent says they "activate automatically." This guide picks up there. It shows you how to confirm the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
+This guide assumes the skills are already installed. If they are not, the [README](../README.md) covers setup.
+
+This guide covers how to confirm the skills are working, how to steer which one applies, how to put them to work on a real database task, and how to check the results. The worked examples use Claude Code; where another tool differs, the difference is noted inline.
+
+How a skill activates depends on your agent harness. Claude Code and Claude Desktop read a skill automatically when your question matches its `description` frontmatter, which is the behavior this guide assumes. Other tools load the same `SKILL.md` content through their own mechanism: Cursor rules can be always-on, attached by file glob, or requested by description; GitHub Copilot instructions are usually scoped by `applyTo` file globs; OpenAI Codex loads `AGENTS.md` on every request. So exactly when a skill applies varies by tool. Check your agent's documentation for how it selects and loads skills.
 
 ## 1. See a skill change an answer
 
